@@ -22,7 +22,9 @@ with st.sidebar:
 
 if main_page:
     cola, colb = st.columns([2,9])
-    cola.markdown(f"""<a target="_self" href="{'https://penpal.streamlit.app/'}"><img src="{penpal_image_path}" style="display:block;" width="100%" height="100%"></a>""", unsafe_allow_html=1)
+    cola.markdown(
+        f"""<a target="_self" href="{'https://penpal.streamlit.app/'}"><img src="{penpal_image_path}" style="display:block;" width="100%" height="100%"></a>""",
+        unsafe_allow_html=1)
     colb.markdown('# PenPal \nAn AI Cover Letter Writer')
     form = st.form('form')
     col1, col2 = form.columns([1,1])
