@@ -1703,21 +1703,6 @@ files = [
 doc = ["reno", "sphinx", "tornado (>=4.5)"]
 
 [[package]]
-name = "tmdbv3api"
-version = "1.7.7"
-description = "A lightweight Python library for The Movie Database (TMDb) API."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "tmdbv3api-1.7.7-py2.py3-none-any.whl", hash = "sha256:1b72aefa4d075a6f6849a1b3623df9b07b300c9c971173fd35271daf89930b46"},
-    {file = "tmdbv3api-1.7.7.tar.gz", hash = "sha256:95c8987e9e0d3b0b0263e3f3c1cb6e594eecf2627564830123652b18f7b64469"},
-]
-
-[package.dependencies]
-requests = "*"
-
-[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -2025,4 +2010,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<3.9.7 || >3.9.7,<4.0"
-content-hash = "6f1039a549de16ccede1393ae97be578e44b26476355196058cb308f04f542a4"
+content-hash = "4d1333f8fd0f4bb928707a574d0bc8f684a13935f756726959d0d857b1f1273a"
