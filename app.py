@@ -1,11 +1,16 @@
 import streamlit as st
 import os
-from PenPal.functions import generate, get_prompt
+from PenPal.functions import ask, get_letter_prompt, get_job_details_prompt, get_job_details
 from PenPal.constants import penpal_image_path, github_image_path, patreon_image_path, error_response, default
+import pdfplumber
+
+
+
+
 
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
-st.set_page_config(page_title='PenPal', page_icon="🖋️", layout="wide", initial_sidebar_state='collapsed')
+st.set_page_config(page_title='PenPal', page_icon="🖋️", layout="centered", initial_sidebar_state='collapsed')
 st.markdown(f'''
     <style>
         section[data-testid="stSidebar"] .css-ng1t4o {{width: 14rem;}}
@@ -26,23 +31,39 @@ if main_page:
         f"""<a target="_self" href="{'https://penpal.streamlit.app/'}"><img src="{penpal_image_path}" style="display:block;" width="100%" height="100%"></a>""",
         unsafe_allow_html=1)
     colb.markdown('# PenPal \nAn AI Cover Letter Writer')
-    form = st.form('form')
-    col1, col2 = form.columns([1,1])
-    name = col1.text_input('Name', default['name'])
-    resume = col1.text_area('Resume', default['resume'], height=340)
-    company = col2.text_input('Company', default['company'])
-    title = col2.text_input('Title', default['title'])
-    skills = col2.text_area('Desired Skills', default['skills'])
-    description = col2.text_area('Job Description', default['description'])
-    if form.form_submit_button('Submit'):
-        prompt = get_prompt(company, title, skills, description, resume, name)
-        try:
-            generate(prompt)
-        except Exception as e:
-            try:
-                generate(prompt)
-            except Exception as e:
-                st.error(error_response)
+    auto, manual = st.tabs(['Automatic', 'Manual'])
+    with auto:
+        form = st.form('form')
+        resume_file = form.file_uploader('Resume', 'pdf')
+        url = form.text_input('Job URL', default['url'])
+        if form.form_submit_button('Submit'):
+            with pdfplumber.open(resume_file) as pdf:
+                resume = ''
+                for page in pdf.pages:
+                    resume += page.extract_text(x_tolerance=1, y_tolerance=1)
+            with st.spinner("Gathering job details..."):
+                job_details_prompt = get_job_details_prompt(url)
+                try:
+                    job_details_raw = ask(job_details_prompt)
+                    company, title, skills, description = get_job_details(job_details_raw)
+                except Exception as e:
+                    st.write(e)
+                    st.write(job_details_raw)
+            with st.spinner("Writing cover letter..."):
+                letter_prompt = get_letter_prompt(company, title, skills, description, resume)
+                ask(letter_prompt, write=True)
+    with manual:
+        form = st.form('form_manual')
+        col1, col2 = form.columns([1,1])
+        resume = col1.text_area('Resume', default['resume'], height=425)
+        company = col2.text_input('Company', default['company'])
+        title = col2.text_input('Title', default['title'])
+        skills = col2.text_area('Desired Skills', default['skills'])
+        description = col2.text_area('Job Description', default['description'])
+        if form.form_submit_button('Submit'):
+            prompt = get_letter_prompt(company, title, skills, description, resume)
+            with st.spinner("Writing cover letter..."):
+                ask(prompt, write=True)
 if about_page:
     st.markdown('# About \n')
     st.write('Built by [Erick Martinez](https://github.com/erickfm) using OpenAI, LangChain, and Streamlit. PenPal icons by me'

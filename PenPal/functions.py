@@ -1,6 +1,8 @@
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.chat_models import ChatOpenAI
 import streamlit as st
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
 chat = ChatOpenAI(temperature=1, model_name='gpt-3.5-turbo')
 
 
@@ -13,33 +15,54 @@ def chatgpt(content, sys="You are a helpful assistant."):
     return chat(messages).content
 
 
-def generate(prompt):
-    with st.spinner("Thinking..."):
-        response = chatgpt(prompt)
+def ask(prompt, write=False):
+    response = chatgpt(prompt)
+    if write:
         st.write(response)
-    # with st.spinner("Fetching results..."):
-    #     for film in films:
-    #         search_results = movie.search(film)
-    #         n = 0
-    #         result = search_results[n]
-    #         while result.release_date.split('-')[0] != films[film]["release year"]:
-    #             n += 1
-    #             result = search_results[n]
-    #         col1, col2 = st.columns([1, 1])
-    #         col1.image("https://image.tmdb.org/t/p/w500/" + result.poster_path)
-    #         col2.write(f"### [{result.title}](https://www.themoviedb.org/movie/{result.id}) ({result.release_date.split('-')[0]})")
-    #         col2.write(result.overview)
+    return response
 
 
-def get_prompt(company, title, skills, description, resume, name):
-    prompt = f"""Given a company, job title, desired skills, job description, resume, and applicant name, return a cover letter likely to get the applicant an interview. 
+def get_letter_prompt(company, title, skills, description, resume):
+    prompt = f"""Given a company, job title, desired skills, job description, and resume, generate an effective cover letter from the applicant's resume to enhance their chances of securing an interview. 
     Company: {company}
     Job title: {title}
     Desired skills: {skills}
     Job description: {description}
     Resume: {resume}
-    Applicant Name: {name}
     
     
     Cover Letter: """
     return prompt
+
+
+def get_webpage_text(url):
+    html = urlopen(url).read()
+    soup = BeautifulSoup(html, features="html.parser")
+    for script in soup(["script", "style"]):
+        script.extract()
+    text = soup.get_text()
+    lines = [line.strip() for line in text.splitlines()]
+    chunks = [phrase.strip() for line in lines for phrase in line.split("  ")]
+    text = '\n '.join([chunk for chunk in chunks if chunk])
+    return text
+
+
+def get_job_details_prompt(link):
+    webpage_text = get_webpage_text(link)
+    prompt = f"""Given the text from a webpage for a job post, return the company, job title, desired skills, and job description in the format given below.
+    Webpage text: {webpage_text}
+     
+    Company: 
+    Job title: 
+    Desired skills: 
+    Job description: """
+    return prompt
+
+
+def get_job_details(job_details_raw):
+    company = job_details_raw.split('Company:')[1].split('Job title:')[0]
+    title = job_details_raw.split('Job title:')[1].split('Desired skills:')[0]
+    skills = job_details_raw.split('Desired skills:')[1].split('Job description:')[0]
+    description = job_details_raw.split('Job description:')[1]
+
+    return company, title, skills, description
