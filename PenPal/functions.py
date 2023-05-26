@@ -1,7 +1,7 @@
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.chat_models import ChatOpenAI
 import streamlit as st
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
 chat = ChatOpenAI(temperature=1, model_name='gpt-3.5-turbo')
 
@@ -36,7 +36,7 @@ def get_letter_prompt(company, title, skills, description, resume):
 
 
 def get_webpage_text(url):
-    html = urlopen(url).read()
+    html = urlopen(Request(url, headers={'User-Agent': 'Mozilla/5.0'})).read()
     soup = BeautifulSoup(html, features="html.parser")
     for script in soup(["script", "style"]):
         script.extract()
@@ -47,8 +47,7 @@ def get_webpage_text(url):
     return text
 
 
-def get_job_details_prompt(link):
-    webpage_text = get_webpage_text(link)
+def get_job_details_prompt(webpage_text):
     prompt = f"""Given the text from a webpage for a job post, return the company, job title, desired skills, and job description in the format given below.
     Webpage text: {webpage_text}
      
