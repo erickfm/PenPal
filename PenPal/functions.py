@@ -23,7 +23,7 @@ def ask(prompt, write=False):
 
 
 def get_letter_prompt(company, title, skills, description, resume):
-    prompt = f"""Given a company, job title, desired skills, job description, and resume, generate an effective cover letter from the applicant's resume to enhance their chances of securing an interview. 
+    prompt = f"""Given a company, job title, desired skills, job description, and resume, generate an personable and effective cover letter from the applicant's resume to enhance their chances of securing an interview. 
     Company: {company}
     Job title: {title}
     Desired skills: {skills}
